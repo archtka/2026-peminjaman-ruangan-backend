@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SistemPeminjamanAPI.Data;
 using SistemPeminjamanAPI.Models;
+using SistemPeminjamanAPI.DTOs; // 👈 Kita panggil folder DTOs
 
 namespace SistemPeminjamanAPI.Controllers
 {
@@ -11,41 +12,47 @@ namespace SistemPeminjamanAPI.Controllers
     {
         private readonly AppDbContext _context;
 
-        // Konstruktor: Minta akses ke 'Pustakawan' (AppDbContext)
         public RoomsController(AppDbContext context)
         {
             _context = context;
         }
 
-        // 1. GET: Ambil semua data ruangan
+        // GET: api/Rooms
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Room>>> GetRooms()
         {
             return await _context.Rooms.ToListAsync();
         }
 
-        // 2. GET: Ambil satu ruangan berdasarkan ID
+        // GET: api/Rooms/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Room>> GetRoom(int id)
         {
             var room = await _context.Rooms.FindAsync(id);
-
-            if (room == null)
-            {
-                return NotFound("Ruangan tidak ditemukan!");
-            }
-
+            if (room == null) return NotFound();
             return room;
         }
 
-        // 3. POST: Tambah ruangan baru
+        // POST: api/Rooms
+        // 👇 PERUBAHAN DISINI: Pakai CreateRoomDto, bukan Room
         [HttpPost]
-        public async Task<ActionResult<Room>> PostRoom(Room room)
+        public async Task<ActionResult<Room>> PostRoom(CreateRoomDto roomDto)
         {
-            _context.Rooms.Add(room);
+            // 1. Pindahkan data dari DTO (Formulir) ke Entity (Barang Gudang)
+            var newRoom = new Room
+            {
+                Name = roomDto.Name,
+                Description = roomDto.Description,
+                Capacity = roomDto.Capacity,
+                IsAvailable = true // Default selalu tersedia
+            };
+
+            // 2. Simpan ke Database
+            _context.Rooms.Add(newRoom);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetRoom", new { id = room.Id }, room);
+            // 3. Kembalikan hasil
+            return CreatedAtAction("GetRoom", new { id = newRoom.Id }, newRoom);
         }
     }
 }
