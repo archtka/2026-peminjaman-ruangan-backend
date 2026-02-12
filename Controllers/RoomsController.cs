@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SistemPeminjamanAPI.Data;
 using SistemPeminjamanAPI.Models;
+using SistemPeminjamanAPI.DTOs;
 
 namespace SistemPeminjamanAPI.Controllers
 {
@@ -11,7 +12,6 @@ namespace SistemPeminjamanAPI.Controllers
     {
         private readonly AppDbContext _context;
 
-        // Konstruktor: Minta akses ke 'Pustakawan' (AppDbContext)
         public RoomsController(AppDbContext context)
         {
             _context = context;
@@ -38,14 +38,57 @@ namespace SistemPeminjamanAPI.Controllers
             return room;
         }
 
-        // 3. POST: Tambah ruangan baru
+        // 3. POST: Tambah ruangan baru (Pakai DTO)
         [HttpPost]
-        public async Task<ActionResult<Room>> PostRoom(Room room)
+        public async Task<ActionResult<Room>> PostRoom(CreateRoomDto roomDto)
         {
-            _context.Rooms.Add(room);
+            var newRoom = new Room
+            {
+                Name = roomDto.Name,
+                Description = roomDto.Description,
+                Capacity = roomDto.Capacity,
+                IsAvailable = true
+            };
+
+            _context.Rooms.Add(newRoom);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetRoom", new { id = room.Id }, room);
+            return CreatedAtAction("GetRoom", new { id = newRoom.Id }, newRoom);
         }
-    }
-}
+
+        // 4. PUT: Update data ruangan (Edit)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutRoom(int id, CreateRoomDto roomDto)
+        {
+            var room = await _context.Rooms.FindAsync(id);
+            if (room == null)
+            {
+                return NotFound("Ruangan tidak ditemukan!");
+            }
+
+            room.Name = roomDto.Name;
+            room.Description = roomDto.Description;
+            room.Capacity = roomDto.Capacity;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // 5. DELETE: Hapus ruangan
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteRoom(int id)
+        {
+            var room = await _context.Rooms.FindAsync(id);
+            if (room == null)
+            {
+                return NotFound("Ruangan tidak ditemukan!");
+            }
+
+            _context.Rooms.Remove(room);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+    } 
+} 
