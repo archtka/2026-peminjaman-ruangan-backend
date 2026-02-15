@@ -13,6 +13,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Ini biar aplikasi tau kalau ada folder Controllers
 builder.Services.AddControllers();
 
+// === KODE SURAT IZIN CORS (TAMBAHKAN INI) ===
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000") // Alamat React kamu
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+// ============================================
+
 // 3. SETTING SWAGGER (Peta API)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -36,6 +48,8 @@ if (app.Environment.IsDevelopment())
 }
 
 // app.UseHttpsRedirection(); 
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthorization();
 
