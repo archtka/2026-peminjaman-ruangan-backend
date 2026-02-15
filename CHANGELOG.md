@@ -1,5 +1,14 @@
 # Changelog
 
+## [v1.1.0] - 2026-02-15
+
+### 🚀 Fitur Baru (Bookings)
+- Menambahkan **Modul Peminjaman (Bookings)**.
+- **POST**: Mahasiswa dapat mengajukan peminjaman ruangan (Status default: Pending).
+- **GET**: Admin dapat melihat daftar seluruh peminjaman.
+- **PUT**: Admin dapat mengubah status peminjaman menjadi **Approved** atau **Rejected**.
+- Menambahkan validasi ketersediaan ruangan saat pengajuan pinjaman.
+
 Semua perubahan penting pada proyek ini akan didokumentasikan dalam file ini.
 
 ## [v1.0.0] - 2026-02-11
