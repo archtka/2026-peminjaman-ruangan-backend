@@ -21,4 +21,16 @@ namespace SistemPeminjamanAPI.DTOs
         [Required]
         public string Status { get; set; } = string.Empty; // Nanti isinya: "Approved" atau "Rejected"
     }
+    // Formulir untuk mengedit data peminjaman (ganti tanggal/ruangan/nama)
+    public class UpdateBookingDTO
+    {
+        [Required]
+        public int RoomId { get; set; }
+
+        [Required]
+        public string BorrowerName { get; set; } = string.Empty;
+
+        [Required]
+        public DateTime BookingDate { get; set; }
+    }
 }
