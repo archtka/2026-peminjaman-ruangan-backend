@@ -17,103 +17,93 @@ namespace SistemPeminjamanAPI.Controllers
             _context = context;
         }
 
-        // 1. LIHAT SEMUA PEMINJAMAN + FITUR PENCARIAN & FILTER
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Booking>>> GetBookings([FromQuery] string? search, [FromQuery] string? status)
+        public async Task<ActionResult<IEnumerable<Booking>>> GetBookings()
         {
-            // Ambil semua data dulu
-            var query = _context.Bookings.AsQueryable();
-
-            // Fitur Pencarian berdasarkan Nama Peminjam
-            if (!string.IsNullOrEmpty(search))
-            {
-                query = query.Where(b => b.BorrowerName.ToLower().Contains(search.ToLower()));
-            }
-
-            // Fitur Filter berdasarkan Status (Pending/Approved/Rejected)
-            if (!string.IsNullOrEmpty(status))
-            {
-                query = query.Where(b => b.Status.ToLower() == status.ToLower());
-            }
-
-            return await query.ToListAsync();
+            return await _context.Bookings.ToListAsync();
         }
 
-        // 2. LIHAT DETAIL 1 PEMINJAMAN (Berdasarkan ID)
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Booking>> GetBooking(int id)
-        {
-            var booking = await _context.Bookings.FindAsync(id);
-            if (booking == null) return NotFound("Data peminjaman tidak ditemukan!");
-            return booking;
-        }
-
-        // 3. MAHASISWA PINJAM RUANGAN (Create)
         [HttpPost]
         public async Task<ActionResult<Booking>> CreateBooking(CreateBookingDTO dto)
         {
             var roomExists = await _context.Rooms.AnyAsync(r => r.Id == dto.RoomId);
             if (!roomExists) return NotFound("Ruangan tidak ditemukan!");
 
+            if (dto.EndTime <= dto.BookingDate) return BadRequest("Waktu selesai harus lebih dari waktu mulai!");
+
+            // Cek Bentrok
+            var isConflict = await _context.Bookings.AnyAsync(b => 
+                b.RoomId == dto.RoomId && 
+                b.Status != "Rejected" && 
+                b.BookingDate < dto.EndTime && 
+                b.EndTime > dto.BookingDate);
+
+            if (isConflict) return BadRequest("Gagal! Ruangan sudah dibooking pada jam tersebut.");
+
+            var waktuSekarang = DateTime.Now.ToString("dd MMM yyyy HH:mm");
+
             var booking = new Booking
             {
                 RoomId = dto.RoomId,
                 BorrowerName = dto.BorrowerName,
                 BookingDate = dto.BookingDate,
-                Status = "Pending"
+                EndTime = dto.EndTime,
+                Status = "Pending",
+                StatusHistory = $"[{waktuSekarang}] 📝 Pengajuan dibuat (Status: Pending)"
             };
 
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetBooking), new { id = booking.Id }, booking);
+            return Ok(booking);
         }
 
-        // 4. EDIT DATA PEMINJAMAN (Ganti tanggal / ruangan)
+        // UPDATE KESELURUHAN DATA (EDIT)
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBooking(int id, UpdateBookingDTO dto)
         {
             var booking = await _context.Bookings.FindAsync(id);
-            if (booking == null) return NotFound("Data peminjaman tidak ditemukan!");
+            if (booking == null) return NotFound("Data tidak ditemukan!");
 
-            var roomExists = await _context.Rooms.AnyAsync(r => r.Id == dto.RoomId);
-            if (!roomExists) return NotFound("Ruangan baru tidak ditemukan!");
+            if (dto.EndTime <= dto.BookingDate) return BadRequest("Waktu selesai harus lebih dari waktu mulai!");
 
+            var waktuSekarang = DateTime.Now.ToString("dd MMM yyyy HH:mm");
+            
             booking.RoomId = dto.RoomId;
             booking.BorrowerName = dto.BorrowerName;
             booking.BookingDate = dto.BookingDate;
+            booking.EndTime = dto.EndTime;
+            booking.StatusHistory += $"\n[{waktuSekarang}] ✏️ Admin mengedit data peminjaman.";
 
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Data peminjaman berhasil diubah", booking });
+            return Ok(booking);
         }
 
-        // 5. ADMIN SETUJUI / TOLAK PEMINJAMAN (Ubah Status)
+        // UPDATE STATUS SAJA (ACC/TOLAK)
         [HttpPut("{id}/status")]
         public async Task<IActionResult> UpdateStatus(int id, UpdateBookingStatusDTO dto)
         {
             var booking = await _context.Bookings.FindAsync(id);
-            if (booking == null) return NotFound("Data peminjaman tidak ditemukan!");
+            if (booking == null) return NotFound("Data tidak ditemukan!");
 
-            if (dto.Status != "Approved" && dto.Status != "Rejected" && dto.Status != "Pending")
-            {
-                return BadRequest("Status hanya boleh: Pending, Approved, atau Rejected");
-            }
-
+            var waktuSekarang = DateTime.Now.ToString("dd MMM yyyy HH:mm");
+            
             booking.Status = dto.Status;
+            booking.StatusHistory += $"\n[{waktuSekarang}] 🔄 Status diubah menjadi: {dto.Status}";
+            
             await _context.SaveChangesAsync();
-            return Ok(new { message = $"Status berhasil diubah menjadi {dto.Status}", booking });
+            return Ok(new { message = $"Status diubah jadi {dto.Status}" });
         }
 
-        // 6. HAPUS DATA PEMINJAMAN (Batal Pinjam / Dihapus Admin)
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBooking(int id)
         {
             var booking = await _context.Bookings.FindAsync(id);
-            if (booking == null) return NotFound("Data peminjaman tidak ditemukan!");
+            if (booking == null) return NotFound();
 
             _context.Bookings.Remove(booking);
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Data peminjaman berhasil dihapus" });
+            return Ok();
         }
     }
 }

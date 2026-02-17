@@ -2,35 +2,24 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SistemPeminjamanAPI.DTOs
 {
-    // Formulir untuk Mahasiswa saat mau pinjam ruangan
     public class CreateBookingDTO
     {
-        [Required]
-        public int RoomId { get; set; }
-
-        [Required]
-        public string BorrowerName { get; set; } = string.Empty;
-
-        [Required]
-        public DateTime BookingDate { get; set; }
+        [Required] public int RoomId { get; set; }
+        [Required] public string BorrowerName { get; set; } = string.Empty;
+        [Required] public DateTime BookingDate { get; set; }
+        [Required] public DateTime EndTime { get; set; } 
     }
 
-    // Formulir untuk Admin saat mau Approve / Reject
     public class UpdateBookingStatusDTO
     {
-        [Required]
-        public string Status { get; set; } = string.Empty; // Nanti isinya: "Approved" atau "Rejected"
+        [Required] public string Status { get; set; } = string.Empty; 
     }
-    // Formulir untuk mengedit data peminjaman (ganti tanggal/ruangan/nama)
+
     public class UpdateBookingDTO
     {
-        [Required]
-        public int RoomId { get; set; }
-
-        [Required]
-        public string BorrowerName { get; set; } = string.Empty;
-
-        [Required]
-        public DateTime BookingDate { get; set; }
+        [Required] public int RoomId { get; set; }
+        [Required] public string BorrowerName { get; set; } = string.Empty;
+        [Required] public DateTime BookingDate { get; set; }
+        [Required] public DateTime EndTime { get; set; } 
     }
 }

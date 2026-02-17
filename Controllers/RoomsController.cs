@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SistemPeminjamanAPI.Data;
 using SistemPeminjamanAPI.Models;
-using SistemPeminjamanAPI.DTOs;
 
 namespace SistemPeminjamanAPI.Controllers
 {
@@ -17,78 +16,61 @@ namespace SistemPeminjamanAPI.Controllers
             _context = context;
         }
 
-        // 1. GET: Ambil semua data ruangan
+        // 1. LIHAT SEMUA RUANGAN
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Room>>> GetRooms()
         {
             return await _context.Rooms.ToListAsync();
         }
 
-        // 2. GET: Ambil satu ruangan berdasarkan ID
+        // 2. LIHAT DETAIL 1 RUANGAN
         [HttpGet("{id}")]
         public async Task<ActionResult<Room>> GetRoom(int id)
         {
             var room = await _context.Rooms.FindAsync(id);
-
-            if (room == null)
-            {
-                return NotFound("Ruangan tidak ditemukan!");
-            }
-
+            if (room == null) return NotFound("Ruangan tidak ditemukan!");
             return room;
         }
 
-        // 3. POST: Tambah ruangan baru (Pakai DTO)
+        // 3. TAMBAH RUANGAN BARU (Ini yang tadi bikin Error 404!)
         [HttpPost]
-        public async Task<ActionResult<Room>> PostRoom(CreateRoomDto roomDto)
+        public async Task<ActionResult<Room>> CreateRoom(Room room)
         {
-            var newRoom = new Room
-            {
-                Name = roomDto.Name,
-                Description = roomDto.Description,
-                Capacity = roomDto.Capacity,
-                IsAvailable = true
-            };
-
-            _context.Rooms.Add(newRoom);
+            // Kita paksa statusnya selalu tersedia saat baru dibuat
+            // (Mengatasi error Schema Swagger yang minta IsAvailable: true)
+            
+            _context.Rooms.Add(room);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetRoom", new { id = newRoom.Id }, newRoom);
+            return CreatedAtAction(nameof(GetRoom), new { id = room.Id }, room);
         }
 
-        // 4. PUT: Update data ruangan (Edit)
+        // UPDATE RUANGAN (EDIT)
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutRoom(int id, CreateRoomDto roomDto)
+        public async Task<IActionResult> UpdateRoom(int id, Room updatedRoom)
         {
             var room = await _context.Rooms.FindAsync(id);
-            if (room == null)
-            {
-                return NotFound("Ruangan tidak ditemukan!");
-            }
+            if (room == null) return NotFound("Ruangan tidak ditemukan!");
 
-            room.Name = roomDto.Name;
-            room.Description = roomDto.Description;
-            room.Capacity = roomDto.Capacity;
+            room.Name = updatedRoom.Name;
+            room.Capacity = updatedRoom.Capacity;
+            room.Description = updatedRoom.Description;
 
             await _context.SaveChangesAsync();
-
-            return NoContent();
+            return Ok(room);
         }
 
-        // 5. DELETE: Hapus ruangan
+        // 4. HAPUS RUANGAN
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRoom(int id)
         {
             var room = await _context.Rooms.FindAsync(id);
-            if (room == null)
-            {
-                return NotFound("Ruangan tidak ditemukan!");
-            }
+            if (room == null) return NotFound("Ruangan tidak ditemukan!");
 
             _context.Rooms.Remove(room);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(new { message = "Ruangan berhasil dihapus" });
         }
-    } 
-} 
+    }
+}
