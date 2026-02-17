@@ -1,52 +1,35 @@
-# 🏨 Sistem Peminjaman Ruangan (Backend)
+# 🏛️ Archtka - PENS E-Office (Sistem Peminjaman Ruangan)
 
-Backend API untuk sistem peminjaman ruangan di kampus, dibuat menggunakan **ASP.NET Core Web API**.
-Proyek ini bertujuan untuk mempermudah pengelolaan data ruangan, jadwal peminjaman, dan validasi ketersediaan ruangan.
+Sistem Informasi Manajemen Peminjaman Ruangan berbasis Web yang dirancang untuk mendigitalisasi proses peminjaman prasarana di lingkungan kampus. 
 
-## 🚀 Fitur Utama
-* **CRUD Ruangan**: Mengelola data ruangan (Create, Read, Update, Delete).
-* **Validasi Data**: Mencegah input data yang tidak logis (misal: kapasitas negatif).
-* **Data Seeding**: Database otomatis terisi data awal saat dijalankan.
-* **Dokumentasi API**: Menggunakan Swagger UI.
+## 📖 Studi Kasus
+Proses peminjaman ruangan di kampus seringkali mengalami bentrok jadwal dan tidak tercatatnya riwayat secara transparan. Archtka hadir sebagai solusi E-Office untuk Admin mengelola prasarana, memverifikasi pengajuan peminjaman (Approve/Reject), dan melacak rekam jejak (*log history*) dari setiap perubahan status secara *real-time*.
 
-## 🛠️ Teknologi yang Digunakan
-* **Framework**: .NET 8.0 (ASP.NET Core Web API)
-* **Database**: SQLite (Development)
-* **ORM**: Entity Framework Core
+## 🚀 Fitur Utama & Fungsionalitas
+1. **Dashboard Analitik:** Menampilkan statistik total ruangan, pengajuan, dan status *Pending*.
+2. **Manajemen Prasarana (CRUD):** Tambah, Edit, Hapus, dan Lihat data ruangan beserta kapasitasnya.
+3. **Manajemen Pengajuan Peminjaman:** - Input pengajuan manual.
+   - Verifikasi pengajuan (Approve / Reject) yang otomatis mengubah status.
+   - *Conflict Handling* (Pencegahan jadwal bentrok).
+4. **Log Riwayat (History):** Mencatat setiap aktivitas *update* status secara mendetail.
+5. **Smart Table:** Dilengkapi fitur *Search*, *Sort* (Terbaru/Terlama), dan *Pagination* (5, 10, 15 baris).
 
-## 📦 Cara Install & Menjalankan
+## 🏗️ Arsitektur Sistem
+Aplikasi ini dibangun dengan arsitektur **Client-Server**:
+- **Frontend (Client):** React.js dengan TypeScript, mengadopsi UI/UX modern (Pastel Theme, Zebra-striped tables, Responsive Design).
+- **Backend (API):** ASP.NET Core Web API (C#) menggunakan Entity Framework Core.
+- **Database:** SQLite (untuk fase *development* dan MVP).
 
-1. **Clone Repository**
-   ```bash
-   git clone [https://github.com/archtka/2026-peminjaman-ruangan-backend.git](https://github.com/archtka/2026-peminjaman-ruangan-backend.git)
-   cd 2026-peminjaman-ruangan-backend
+## 🔌 API Specification (Singkat)
+- `GET /api/Rooms` : Mengambil seluruh data ruangan.
+- `POST /api/Rooms` : Menambahkan ruangan baru.
+- `GET /api/Bookings` : Mengambil seluruh data peminjaman beserta log riwayat.
+- `POST /api/Bookings` : Membuat pengajuan baru (terdapat validasi bentrok jadwal).
+- `PUT /api/Bookings/{id}/status` : Update status peminjaman (Approve/Reject).
 
-   5.  **Save** (`Ctrl + S` / `Cmd + S`).
+## 💻 Cara Instalasi & Menjalankan
+1. **Backend:** Buka terminal di folder backend -> jalankan `dotnet run` (Berjalan di `http://localhost:5157`).
+2. **Frontend:** Buka terminal di folder frontend -> jalankan `npm install` lalu `npm start` (Berjalan di `http://localhost:3000`).
 
----
-
-#### 2. Bikin File `CHANGELOG.md`
-1.  Klik kanan lagi di area kosong -> **New File**.
-2.  Ketik nama: **`CHANGELOG.md`** (Huruf besar semua).
-3.  **Copy-Paste isi ini:**
-
-```markdown
-# Changelog
-
-Semua perubahan penting pada proyek ini akan didokumentasikan dalam file ini.
-
-## [v1.0.0] - 2026-02-12
-
-### 🚀 Fitur Baru (Features)
-- Menambahkan **Modul Ruangan (Rooms)** lengkap dengan operasi CRUD.
-- **POST**: Menambahkan ruangan baru dengan validasi input (Nama wajib, Kapasitas 1-1000).
-- **GET**: Menampilkan daftar seluruh ruangan dan detail per ruangan.
-- **PUT**: Mengupdate informasi ruangan (Nama, Deskripsi, Kapasitas).
-- **DELETE**: Menghapus data ruangan dari database.
-- Menambahkan **Data Seeding** otomatis (Lab Komputer & Aula).
-- Implementasi **DTO (Data Transfer Object)** untuk keamanan input data.
-
-### 🛠️ Teknis (Chores)
-- Inisialisasi proyek menggunakan ASP.NET Core Web API (.NET 8).
-- Setup database SQLite dengan Entity Framework Core.
-- Dokumentasi API menggunakan Swagger UI.
+## 💡 Refleksi Pembelajaran
+Melalui proyek ini, mahasiswa memahami pentingnya integrasi antara Frontend dan RESTful API Backend, manajemen *state* pada React, serta implementasi *business logic* (seperti validasi waktu dan pencatatan log) langsung pada sisi Backend.
